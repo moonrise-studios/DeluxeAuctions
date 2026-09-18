@@ -23,6 +23,10 @@ repositories {
 }
 
 dependencies {
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     compileOnly("su.nightexpress.coinsengine:CoinsEngine:2.5.0")
     compileOnly("com.github.SkriptLang:Skript:2.12.1")
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
@@ -80,4 +84,8 @@ tasks.withType<ShadowJar>().configureEach {
 
 tasks.build {
     dependsOn(tasks.shadowJar)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
