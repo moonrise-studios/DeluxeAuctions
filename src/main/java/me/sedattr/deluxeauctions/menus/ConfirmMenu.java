@@ -103,7 +103,7 @@ public class ConfirmMenu {
                     this.gui.setItem(this.section.getInt("example_item"), ClickableItem.empty(auction.getAuctionItem().clone()));
 
                 placeholderUtil
-                        .addPlaceholder("%bid_price%", auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.format(this.price)))
+                        .addPlaceholder("%bid_price%", auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.formatExact(this.price)))
                         .addPlaceholder("%item_name%", Utils.strip(Utils.getDisplayName(auction.getAuctionItem())))
                         .addPlaceholder("%item_displayname%", Utils.getDisplayName(auction.getAuctionItem()));
             }

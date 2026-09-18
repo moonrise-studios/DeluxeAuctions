@@ -12,6 +12,7 @@ import me.sedattr.deluxeauctions.others.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -227,6 +228,18 @@ public class Auction {
         return true;
     }
 
+    public synchronized double getMinimumBid() {
+        PlayerBid highest = this.auctionBids.getHighestBid();
+        FileConfiguration config = DeluxeAuctions.getInstance().configFile;
+        return BidAmounts.minimum(this.auctionPrice, highest == null ? null : highest.getBidPrice(),
+                config.getString("settings.bid_formula", "%highest_bid% + %highest_bid% / 10"),
+                config.getInt("number_format.decimal_settings.maximum_fraction", 1));
+    }
+
+    public synchronized boolean acceptsBid(double price) {
+        return BidAmounts.accepts(price, getMinimumBid());
+    }
+
     public synchronized boolean placeBid(Player player, double price) {
         if (AuctionCache.getAuction(this.auctionUUID) == null) {
             DeluxeAuctions.getInstance().dataHandler.debug("Auction (" + this.auctionUUID + ") is not found in the auction list, it can't be sold again!");
@@ -258,9 +271,7 @@ public class Auction {
         }
 
         // Check if bid is low
-        AuctionBids bids = this.getAuctionBids();
-        double bidPrice = bids.getHighestBid() == null ? this.auctionPrice : bids.getHighestBid().getBidPrice();
-        if (price <= bidPrice) {
+        if (!acceptsBid(price)) {
             DeluxeAuctions.getInstance().dataHandler.debug("Player (" + player.getUniqueId() + ") is trying to bid low to auction (" + this.auctionUUID + ")!");
             Utils.sendMessage(player, "low_bid");
             return false;
