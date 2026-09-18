@@ -230,6 +230,13 @@ public class AuctionHook {
         String sellerDisplayName = auction.getAuctionOwnerDisplayName() != null ? auction.getAuctionOwnerDisplayName() : sellerName;
         String buyerName = highestBid != null && highestBid.getBidOwnerName() != null ? highestBid.getBidOwnerName() : "";
         String buyerDisplayName = highestBid != null && highestBid.getBidOwnerDisplayName() != null ? highestBid.getBidOwnerDisplayName() : buyerName;
+        boolean normalAuction = auction.getAuctionType() == AuctionType.NORMAL;
+        String startingPrice = normalAuction
+                ? DeluxeAuctions.getInstance().numberFormat.formatExact(auction.getAuctionPrice())
+                : DeluxeAuctions.getInstance().numberFormat.format(auction.getAuctionPrice());
+        String highestPrice = highestBid == null ? "" : normalAuction
+                ? DeluxeAuctions.getInstance().numberFormat.formatExact(highestBid.getBidPrice())
+                : DeluxeAuctions.getInstance().numberFormat.format(highestBid.getBidPrice());
         if (!lore.isEmpty())
             for (String line : lore) {
                 if (line.contains("%item_lore%")) {
@@ -242,14 +249,14 @@ public class AuctionHook {
 
                 newLore.add(AdventureText.component(line
                         .replace("%bid_amount%", String.valueOf(auction.getAuctionBids().getPlayerBids().size()))
-                        .replace("%bid_price%", auction.getEconomy().getText().replace("%price%", highestBid != null ? DeluxeAuctions.getInstance().numberFormat.format(highestBid.getBidPrice()) : ""))
+                        .replace("%bid_price%", auction.getEconomy().getText().replace("%price%", highestPrice))
                         .replace("%bidder_displayname%", buyerDisplayName)
                         .replace("%buyer_displayname%", buyerDisplayName)
                         .replace("%seller_displayname%", sellerDisplayName)
                         .replace("%seller_name%", sellerName)
                         .replace("%buyer_name%", buyerName)
                         .replace("%auction_type%", auction.getAuctionType().name())
-                        .replace("%auction_price%", auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.format(auction.getAuctionPrice())))
+                        .replace("%auction_price%", auction.getEconomy().getText().replace("%price%", startingPrice))
                         .replace("%auction_time%", DeluxeAuctions.getInstance().timeFormat.formatTime(auction.getAuctionEndTime() - ZonedDateTime.now().toInstant().getEpochSecond(), "auction_times"))
                 ));
             }

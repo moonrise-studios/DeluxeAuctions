@@ -3,6 +3,7 @@ package me.sedattr.deluxeauctions.others;
 import me.sedattr.deluxeauctions.DeluxeAuctions;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -78,6 +79,13 @@ public class NumberFormat {
         } catch (NumberFormatException e) {
             return 0.0;
         }
+    }
+
+    // Bidding amounts must be readable without rounding away an accepted minimum or charge.
+    public String formatExact(double number) {
+        if (!Double.isFinite(number))
+            return "";
+        return BigDecimal.valueOf(number).stripTrailingZeros().toPlainString();
     }
 
     public String format(Double number) {
