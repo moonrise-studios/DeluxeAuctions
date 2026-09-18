@@ -121,7 +121,9 @@ public class AuctionCommand {
         PlaceholderUtil placeholderUtil = new PlaceholderUtil()
                 .addPlaceholder("%command_name%", label);
 
-        if (args.length > 0) {
+        String menuToOpen = DeluxeAuctions.getInstance().configFile.getString("settings.menu_to_open_directly");
+        boolean openMenuDirectly = menuToOpen != null && !menuToOpen.isEmpty();
+        if (args.length > 0 || openMenuDirectly) {
             if (DeluxeAuctions.getInstance().locked && !player.isOp()) {
                 Utils.sendMessage(player, "closed");
                 return false;
@@ -141,7 +143,9 @@ public class AuctionCommand {
                 Utils.sendMessage(player, "laggy");
                 return false;
             }
+        }
 
+        if (args.length > 0) {
             String lowerCaseArg = args[0].toLowerCase(Locale.ENGLISH);
 
             if (lowerCaseArg.equals("info") || this.args.get("info").contains(lowerCaseArg)) {
@@ -392,8 +396,13 @@ public class AuctionCommand {
             }
         }
 
-        String menuToOpen = DeluxeAuctions.getInstance().configFile.getString("settings.menu_to_open_directly");
-        if (menuToOpen != null && !menuToOpen.isEmpty()) {
+        if (openMenuDirectly) {
+            String menuPermission = menuToOpen.equalsIgnoreCase("auctions") ? "auctions" : "menu";
+            if (!Utils.hasPermission(commandSender, "player_commands", menuPermission)) {
+                Utils.sendMessage(commandSender, "no_permission");
+                return false;
+            }
+
             if (menuToOpen.equalsIgnoreCase("auctions")) {
                 String category = PlayerCache.getPlayers().containsKey(player.getUniqueId()) ? PlayerCache.getPreferences(player.getUniqueId()).getCategory().getName() : DeluxeAuctions.getInstance().category;
                 new AuctionsMenu(player).open(category, 1);
