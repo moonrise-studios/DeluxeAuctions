@@ -1,5 +1,7 @@
 package me.sedattr.deluxeauctions.managers;
 
+import me.sedattr.deluxeauctions.util.AuctionCooldown;
+
 import lombok.Getter;
 import lombok.Setter;
 import me.sedattr.deluxeauctions.DeluxeAuctions;
@@ -268,14 +270,13 @@ public class Auction {
 
         // Check if auction is new
         long time = DeluxeAuctions.getInstance().configFile.getLong("settings.bid_cooldown", 0);
-        if (time > 0 && this.auctionStartTime > 0) {
-            long difference = ZonedDateTime.now().toInstant().getEpochSecond() - this.auctionStartTime;
-            if (difference < time) {
-                DeluxeAuctions.getInstance().dataHandler.debug("Player (" + player.getUniqueId() + ") is trying to bid new auction (" + this.auctionUUID + "), bid is still on cooldown!");
-                Utils.sendMessage(player, "bid_cooldown", new PlaceholderUtil()
-                        .addPlaceholder("%seconds_left%", String.valueOf(difference)));
-                return false;
-            }
+        long remainingTime = AuctionCooldown.remainingSeconds(time, this.auctionStartTime,
+                ZonedDateTime.now().toInstant().getEpochSecond());
+        if (remainingTime > 0) {
+            DeluxeAuctions.getInstance().dataHandler.debug("Player (" + player.getUniqueId() + ") is trying to bid new auction (" + this.auctionUUID + "), bid is still on cooldown!");
+            Utils.sendMessage(player, "bid_cooldown", new PlaceholderUtil()
+                    .addPlaceholder("%seconds_left%", String.valueOf(remainingTime)));
+            return false;
         }
 
         // Check if player is laggy
@@ -402,16 +403,13 @@ public class Auction {
 
         // Check if auction is new
         long time = DeluxeAuctions.getInstance().configFile.getLong("settings.purchase_cooldown", 0);
-        if (time > 0 && this.auctionStartTime > 0) {
-            long difference = ZonedDateTime.now().toInstant().getEpochSecond() - this.auctionStartTime;
-            long remainingTime = time - difference;
-
-            if (difference < time) {
-                DeluxeAuctions.getInstance().dataHandler.debug("Player (" + player.getUniqueId() + ") is trying to purchase new auction (" + this.auctionUUID + "), purchase is still on cooldown!");
-                Utils.sendMessage(player, "purchase_cooldown", new PlaceholderUtil()
-                        .addPlaceholder("%seconds_left%", String.valueOf(remainingTime)));
-                return false;
-            }
+        long remainingTime = AuctionCooldown.remainingSeconds(time, this.auctionStartTime,
+                ZonedDateTime.now().toInstant().getEpochSecond());
+        if (remainingTime > 0) {
+            DeluxeAuctions.getInstance().dataHandler.debug("Player (" + player.getUniqueId() + ") is trying to purchase new auction (" + this.auctionUUID + "), purchase is still on cooldown!");
+            Utils.sendMessage(player, "purchase_cooldown", new PlaceholderUtil()
+                    .addPlaceholder("%seconds_left%", String.valueOf(remainingTime)));
+            return false;
         }
 
         // Lag check
