@@ -53,6 +53,12 @@ auction settings, GUI layouts, messages, economy and integrations.
 Listing duration, price ranges, taxes, sounds, and category filters are
 all driven from these files.
 
+The first auction bid may equal its starting price. Later bids must meet
+`settings.bid_formula`, rounded upward to the configured maximum decimal
+precision and always above the current highest bid. Bid menus and confirmation
+show exact amounts; confirmation checks the current minimum again so an older
+offer cannot replace a newer bid.
+
 ## License
 
 See `LICENSE`.

@@ -12,8 +12,6 @@ import me.sedattr.deluxeauctions.managers.PlayerBid;
 import me.sedattr.deluxeauctions.others.PlaceholderUtil;
 import me.sedattr.deluxeauctions.others.TaskUtils;
 import me.sedattr.deluxeauctions.others.Utils;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -233,24 +231,9 @@ public class NormalViewMenu implements MenuManager {
         }
     }
 
-    private double calculateBidAmount() {
-        AuctionBids bids = this.auction.getAuctionBids();
-
-        if (bids.getHighestBid() == null)
-            return this.auction.getAuctionPrice();
-
-        String bidFormula = DeluxeAuctions.getInstance().configFile.getString("settings.bid_formula", "%highest_bid% + %highest_bid% / 10");
-        Expression e = new ExpressionBuilder(bidFormula
-                .replace("%highest_bid%", String.valueOf(bids.getHighestBid().getBidPrice())))
-                .build();
-        double formulaPrice = e.evaluate();
-
-        return Math.max(formulaPrice, bids.getHighestBid().getBidPrice());
-    }
-
     private void loadCustomBidItem() {
         AuctionBids bids = this.auction.getAuctionBids();
-        double price = calculateBidAmount();
+        double price = this.auction.getMinimumBid();
 
         ConfigurationSection itemSection = this.section.getConfigurationSection("custom_bid");
         if (itemSection==null)
@@ -268,7 +251,7 @@ public class NormalViewMenu implements MenuManager {
             return;
 
         PlaceholderUtil placeholderUtil = new PlaceholderUtil()
-                .addPlaceholder("%minimum_bid_amount%", this.auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.format(price)));
+                .addPlaceholder("%minimum_bid_amount%", this.auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.formatExact(price)));
 
         ItemStack itemStack = Utils.createItemFromSection(itemSection, placeholderUtil);
         if (itemStack == null)
@@ -282,7 +265,7 @@ public class NormalViewMenu implements MenuManager {
 
     private void loadBidItem() {
         AuctionBids bids = this.auction.getAuctionBids();
-        double price = calculateBidAmount();
+        double price = this.auction.getMinimumBid();
 
         ConfigurationSection itemSection = this.section.getConfigurationSection("submit_bid");
         if (itemSection==null)
@@ -299,7 +282,7 @@ public class NormalViewMenu implements MenuManager {
         }
 
         PlaceholderUtil placeholderUtil = new PlaceholderUtil()
-                .addPlaceholder("%auction_price%", this.auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.format(price)));
+                .addPlaceholder("%auction_price%", this.auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.formatExact(price)));
 
         ItemStack itemStack = Utils.createItemFromSection(itemSection, placeholderUtil);
         if (itemStack == null)
@@ -350,7 +333,7 @@ public class NormalViewMenu implements MenuManager {
                             bidDescription.forEach(a -> newLore.add(Utils.colorize(a
                                     .replace("%bid_time%", DeluxeAuctions.getInstance().timeFormat.formatTime(ZonedDateTime.now().toInstant().getEpochSecond()-bid.getBidTime(), "other_times"))
                                     .replace("%bidder_username%", bid.getBidOwnerDisplayName())
-                                    .replace("%bid_amount%", this.auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.format(bid.getBidPrice()))))));
+                                    .replace("%bid_amount%", this.auction.getEconomy().getText().replace("%price%", DeluxeAuctions.getInstance().numberFormat.formatExact(bid.getBidPrice()))))));
                             i++;
                         }
 
@@ -400,12 +383,12 @@ public class NormalViewMenu implements MenuManager {
         double number;
         try {
             number = Double.parseDouble(input);
-        } catch (Exception e) {
-            number = 0;
+        } catch (NumberFormatException e) {
+            open(this.back);
+            return;
         }
 
-        double price = calculateBidAmount();
-        if (!Double.isFinite(number) || number < price) {
+        if (!this.auction.acceptsBid(number)) {
             open(this.back);
             return;
         }
