@@ -1,15 +1,17 @@
-package me.sedattr.deluxeauctions.managers;
+package me.sedattr.deluxeauctions.util;
 
 import net.objecthunter.exp4j.ExpressionBuilder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-final class BidAmounts {
+public final class BidAmounts {
     private BidAmounts() {
     }
 
-    static double minimum(double startingPrice, Double highestBid, String formula, int fractionDigits) {
+    public static double minimum(double startingPrice, @Nullable Double highestBid, @NotNull String formula, int fractionDigits) {
         if (!Double.isFinite(startingPrice) || startingPrice < 0)
             return Double.NaN;
         if (highestBid == null)
@@ -39,7 +41,7 @@ final class BidAmounts {
         return Math.max(Math.nextUp(highestBid), rounded.max(nextStep).doubleValue());
     }
 
-    static boolean accepts(double price, double minimum) {
+    public static boolean accepts(double price, double minimum) {
         return Double.isFinite(price) && Double.isFinite(minimum) && price >= 0 && price >= minimum;
     }
 }

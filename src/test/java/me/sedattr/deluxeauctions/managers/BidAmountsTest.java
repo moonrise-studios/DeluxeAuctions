@@ -1,5 +1,7 @@
 package me.sedattr.deluxeauctions.managers;
 
+import me.sedattr.deluxeauctions.util.BidAmounts;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
