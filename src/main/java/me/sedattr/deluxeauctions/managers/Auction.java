@@ -1,5 +1,7 @@
 package me.sedattr.deluxeauctions.managers;
 
+import me.sedattr.deluxeauctions.util.AuctionCooldown;
+
 import lombok.Getter;
 import lombok.Setter;
 import me.sedattr.deluxeauctions.DeluxeAuctions;
